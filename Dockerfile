@@ -27,6 +27,8 @@ COPY package.json /usr/src/app
 
 COPY yarn.lock /usr/src/app
 
+COPY .env /usr/src/app
+
 RUN yarn install
 
 RUN rm -rf ~/.cache
