@@ -1,98 +1,74 @@
-import * as AWS from 'aws-sdk';
-
 export interface S3StreamerInput {
-    recorder: MediaRecorder;
-    bucket: string;
-    key?: string;
+  recorder: MediaRecorder;
+  id: string;
 }
 
 export class S3Streamer {
-    private recorder: MediaRecorder;
-    private bucket: string;
-    private key: string;
-    private s3: AWS.S3;
-    private uploadId: string;
-    private uploadParts: Promise<AWS.S3.UploadPartOutput>[];
+  private recorder: MediaRecorder;
+  private data: any;
+  private chunks: Array<Blob>;
+  private id: string;
 
-    constructor(input: S3StreamerInput) {
-        const { recorder, bucket, key } = input;
+  constructor(input: S3StreamerInput) {
+    const { recorder, id } = input;
+    this.id = id;
+    this.chunks = [];
 
-        this.recorder = recorder;
-        this.bucket = bucket;
-        this.key = key;
-        this.uploadParts = [];
-        this.s3 = new AWS.S3();
+    this.recorder = recorder;
 
-        recorder.ondataavailable = async (event) => {
-            console.log('data available', this.key)
-            try {
-                if (event.data.size > 0) {
-                    this.uploadParts.push(this.s3.uploadPart({
-                        Body: event.data,
-                        Bucket: bucket,
-                        Key: this.key,
-                        PartNumber: this.uploadParts.length + 1,
-                        UploadId: this.uploadId,
-                        ContentLength: event.data.size
-                    }).promise());
-                }
-            } catch (e) {
-                console.log('ondataavailable error', e)
-                if (this.uploadId) {
-                    await this.s3.abortMultipartUpload({
-                        Bucket: bucket,
-                        UploadId: this.uploadId,
-                        Key: this.key
-                    }).promise();
-                }
-            }
-        };
-    }
+    recorder.ondataavailable = async (event) => {
+      console.log("data available", event.data);
+      try {
+        if (event.data) {
+          this.chunks.push(event.data);
+        }
+      } catch (e) {
+        console.log("ondataavailable error", e.message);
+      }
+    };
+  }
 
-    async start() {
-        return new Promise((res, rej) => {
-            this.recorder.onstart = async () => {
-                console.log('onstart', this.key)
-                const data = await this.s3.createMultipartUpload({
-                    Bucket: this.bucket,
-                    Key: this.key,
-                }).promise();
-                this.uploadId = data.UploadId;
-                res();
-            }
-            this.recorder.start();
+  async start() {
+    return new Promise<void>((res, rej) => {
+      this.recorder.onstart = async () => {
+        console.log("onstart");
 
-        })
-    }
+        console.log(this.data);
 
-    async stop() {
-        return new Promise<string>((res, rej) => {
-            this.recorder.onstop = async () => {
-                console.log('onstop', this.key, this.uploadParts.length)
-                try {
-                    const s3Parts = await Promise.all(this.uploadParts);
-                    const { Location } = await this.s3.completeMultipartUpload({
-                        Bucket: this.bucket,
-                        Key: this.key,
-                        UploadId: this.uploadId,
-                        MultipartUpload: {
-                            Parts: s3Parts.map((resp, index) => { return { ETag: resp.ETag, PartNumber: index + 1 } })
-                        }
-                    }).promise();
-                    return res(Location);
-                } catch (e) {
-                    console.log('onstop error', e)
-                    if (this.uploadId) {
-                        await this.s3.abortMultipartUpload({
-                            Bucket: this.bucket,
-                            Key: this.key,
-                            UploadId: this.uploadId,
-                        }).promise();
-                    }
-                    return rej(e);
-                }
-            }
-            this.recorder.stop();
-        });
-    }
+        res();
+      };
+      this.recorder.start();
+      console.log("this.recorder.state", this.recorder.state);
+    });
+  }
+
+  async stop() {
+    return new Promise<string>((res, rej) => {
+      this.recorder.onstop = async () => {
+        console.log("onstop---> this.chunks", this.chunks);
+        try {
+          const blob = new Blob(this.chunks, {
+            type: "video/webm",
+          });
+
+          var a = document.createElement("a"),
+            url = URL.createObjectURL(blob);
+          a.href = url;
+          a.download = `${this.id}-enzo-records.webm`;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(function () {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+          }, 0);
+
+          return res("Hello Stop");
+        } catch (e) {
+          console.log("onstop error", e);
+          return rej(e);
+        }
+      };
+      this.recorder.stop();
+    });
+  }
 }

@@ -23,10 +23,10 @@
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
-"@twilio/webrtc@4.2.0":
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/@twilio/webrtc/-/webrtc-4.2.0.tgz#f4978ca807116536b5ffcb5e56b5ff076cb5eebb"
-  integrity sha512-MmxRVuQtKSKqSsspe9cGuhIH+p7EuEhainHXvdys8QdFbBpnRkGuQKNwwiNzwf+9DcTvlw1B32q3TDgyfqopKw==
+"@twilio/webrtc@4.3.3":
+  version "4.3.3"
+  resolved "https://registry.yarnpkg.com/@twilio/webrtc/-/webrtc-4.3.3.tgz#c0d5b14db531466f0b77c80f0def916dfa16a873"
+  integrity sha512-YQiqPj+9cy+5xzEu6a/YEiqS/K2eKaqK5duFjH2rHyH3H1gl7Iga+rnOnkz7gMS9jk/i7uNkahjK8cWWpps2fQ==
 
 "@types/body-parser@*":
   version "1.19.0"
@@ -163,10 +163,12 @@
     "@types/express-serve-static-core" "*"
     "@types/mime" "*"
 
-"@types/twilio-video@^2.0.12":
-  version "2.0.12"
-  resolved "https://registry.yarnpkg.com/@types/twilio-video/-/twilio-video-2.0.12.tgz#569beb08ebe97471d4a2d6019d87fe31c845b166"
-  integrity sha512-GrkdzvOFxGFOGlThKcjQce32Pwycoubl5oQK5+H4KSeyDvGHzyZSbnX7qoyWFMXKSHBc165f3dw+oORdr2E7ew==
+"@types/twilio-video@^2.11.0":
+  version "2.11.0"
+  resolved "https://registry.yarnpkg.com/@types/twilio-video/-/twilio-video-2.11.0.tgz#17e28fde1d48115ff4568b98d5e5ca4f8b3f097a"
+  integrity sha512-0jznWmpWD3v1+bd2D5O0CHaV7/WE6CYFE+lJvIFV1KXkKuAcH2Bieg26VtVsp5IwpB8m5u9TveC8Z4WiFNNGgA==
+  dependencies:
+    twilio-video "*"
 
 "@types/yauzl@^2.9.1":
   version "2.9.1"
@@ -3414,12 +3416,12 @@ tty-browserify@0.0.0:
   resolved "https://registry.yarnpkg.com/tty-browserify/-/tty-browserify-0.0.0.tgz#a157ba402da24e9bf957f9aa69d524eed42901a6"
   integrity sha1-oVe6QC2iTpv5V/mqadUk7tQpAaY=
 
-twilio-video@^2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/twilio-video/-/twilio-video-2.3.0.tgz#a96574bece5b1d2897a0b76924dbb29fc8c05938"
-  integrity sha512-03tOkLWamHMLV8Z6imcPG9A1RFOYuSNEn5pbUEa/RhJWgPhmeffwPqOL8tw96md8Byum3vLUFUo5kvEt4NhK1w==
+twilio-video@*, twilio-video@^2.14.0:
+  version "2.14.0"
+  resolved "https://registry.yarnpkg.com/twilio-video/-/twilio-video-2.14.0.tgz#316a5d882cd32a7cdd1b4feed505dd69021bf644"
+  integrity sha512-losFrOq+stkDw+Y5J8xxP5yZz90PjxPQlKPQ6kREV1PoI7ez0Rt/sY1lLyfUWoti5HCR1SybrLjKsoUxySDiDA==
   dependencies:
-    "@twilio/webrtc" "4.2.0"
+    "@twilio/webrtc" "4.3.3"
     backoff "^2.5.0"
     ws "^3.3.1"
     xmlhttprequest "^1.8.0"

@@ -10,6 +10,8 @@
   "permissions": [
     "desktopCapture",
     "<all_urls>",
-    "downloads"
+    "downloads",
+    "tabs",
+    "https://video-meet-dev.vercel.app"
   ]
 }
