@@ -9,49 +9,31 @@ class Puppetcam {
 
   async setup(config: PuppetcamConfig) {
     const { id } = config;
-  
-    console.log("running setup");
-    const streamId = await new Promise((res, rej) => {
-      chrome.desktopCapture.chooseDesktopMedia(["tab", "audio"], res);
-    });
-    console.log(`Got desktop streamId`, streamId);
 
-    // Get the stream
-    const stream: MediaStream = await new Promise((res, rej) => {
-      (navigator as any).webkitGetUserMedia(
+    console.log("running setup");
+    await new Promise<void>((res, rej) => {
+      chrome.tabCapture.capture(
         {
-          audio: {
-            mandatory: {
-              chromeMediaSource: "desktop",
-              chromeMediaSourceId: streamId,
-            },
-          },
-          video: {
-            mandatory: {
-              chromeMediaSource: "desktop",
-              chromeMediaSourceId: streamId,
-              minWidth: 1920,
-              maxWidth: 1920,
-              minHeight: 1080,
-              maxHeight: 1080,
-              maxFrameRate: 30,
-            },
-          },
+          audio: true,
+          video: true,
         },
-        res,
-        rej
+        (stream) => {
+          if (!stream) return;
+          console.log(`Got handle for media stream`);
+
+          const videoRecorder = new MediaRecorder(stream, {
+            videoBitsPerSecond: 2500000,
+            ignoreMutedMedia: true,
+            mimeType: "video/webm;codecs=vp9",
+          } as MediaRecorderOptions);
+          
+          this.videoStreamer = new S3Streamer({ recorder: videoRecorder, id });
+          res();
+          console.log(`Initialized video streamer`);
+        }
       );
     });
-    console.log(`Got handle for media stream`);
-
-    const videoRecorder = new MediaRecorder(stream, {
-      videoBitsPerSecond: 2500000,
-      ignoreMutedMedia: true,
-      mimeType: "video/webm;codecs=vp9",
-    } as MediaRecorderOptions);
-    this.videoStreamer = new S3Streamer({ recorder: videoRecorder, id });
-
-    console.log(`Initialized video streamer`);
+    console.log(`Got desktop streamId`);
   }
 
   async start() {
