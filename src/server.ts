@@ -50,21 +50,18 @@ app.post("/start", async (req, res) => {
       headless: process.env.HEADLESS === 'yes',
       //executablePath: '/usr/bin/chromium-browser',
       args: [
-        "--no-sandbox",
-        "--use-fake-ui-for-media-stream",
-        "--use-fake-device-for-media-stream",
-        "--allow-file-access-from-files",
+        '--use-fake-device-for-media-stream',
+        '--enable-automation',
+        "--autoplay-policy=no-user-gesture-required",
         "--enable-usermedia-screen-capturing",
         "--allow-http-screen-capture",
+        "--no-sandbox",
         "--auto-select-desktop-capture-source=puppetcam",
         "--load-extension=" + path.join(__dirname, "chrome_extension"),
         "--disable-extensions-except=" +
           path.join(__dirname, "chrome_extension"),
-        "--disable-infobars",
         `--window-size=${width},${height}`,
-        "--autoplay-policy=no-user-gesture-required",
-        '--enable-automation',
-        "--autoplay-policy=no-user-gesture-required",
+        '--whitelisted-extension-id=mbjpaljeibfppoiehjacnkmpllebndfk'
       ],
       ignoreDefaultArgs: ["--mute-audio"],
     };
