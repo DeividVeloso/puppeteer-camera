@@ -1,7 +1,6 @@
 import * as bodyParser from "body-parser";
 import * as express from "express";
 import * as path from "path";
-// import * as puppeteer from 'puppeteer-core';
 import * as puppeteer from "puppeteer";
 require("dotenv").config();
 import {
@@ -50,12 +49,12 @@ app.post("/start", async (req, res) => {
       headless: process.env.HEADLESS === "yes",
       executablePath: "/usr/bin/chromium-browser",
       args: [
-        '--no-sandbox',
-        '--enable-usermedia-screen-capturing',
+        "--no-sandbox",
+        "--enable-usermedia-screen-capturing",
         "--use-fake-device-for-media-stream",
         "--allow-http-screen-capture",
         "--auto-select-desktop-capture-source=puppetcam",
-        '--disable-infobars',
+        "--disable-infobars",
         "--enable-automation",
         "--autoplay-policy=no-user-gesture-required",
         `--window-size=${width},${height}`,
@@ -114,18 +113,16 @@ async function startRecording(data: StartRecordingData) {
       document.title = "puppetcam";
     });
 
-  
     if (process.env.RECORD_TELNYX_MEETING === "yes") {
       const url = await goToRoomsPage(page);
       const username = await fillJoinRoomForm(page, {
         id: roomId,
       });
-     const joined =  await checkIfUserJoined(page, username);
+      const joined = await checkIfUserJoined(page, username);
 
-      console.log('url', url)
-      console.log('username', username)
-      console.log('joined', joined)
-
+      console.log("url", url);
+      console.log("username", username);
+      console.log("joined", joined);
     }
 
     console.log(`getBackgroundPage`);
@@ -180,19 +177,19 @@ async function stopRecording(data: TelnyxRecording) {
 
 async function getBackgroundPage(browser: puppeteer.Browser) {
   var targets = await browser.targets();
-  const targetPromise = await new Promise((resolve) => {
+
+  const targetPromise = await new Promise((resolve, reject) => {
     const target = targets.find(
       (target) =>
         target.type() === "background_page" &&
         target.url().endsWith("_generated_background_page.html")
     );
 
-    console.log("target==>", target)
+    console.log("target==>", target);
     if (target) {
       return resolve(target);
     } else {
-      resolve(targets[0])
-      console.log("EI Deivid 222");
+      reject("Could not load Video Record Extension in the browser");
     }
 
     const listener = (target) => {

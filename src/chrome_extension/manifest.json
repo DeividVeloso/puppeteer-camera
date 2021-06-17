@@ -3,9 +3,13 @@
   "version": "0.1.0",
   "manifest_version": 2,
   "background": {
-    "scripts": [
-      "background.js"
-    ]
+    "persistent": false,
+    "scripts": ["background.js"]
   },
-  "permissions": ["tabs", "<all_urls>", "tabCapture"]
+  "permissions": [
+    "tabs",
+    "tabCapture",
+    "<all_urls>",
+    "https://video-meet-dev.vercel.app"
+  ]
 }
