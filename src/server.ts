@@ -47,21 +47,22 @@ app.post("/start", async (req, res) => {
     const height = req.body.height || 1080;
 
     const options = {
-      headless: process.env.HEADLESS === 'yes',
-      //executablePath: '/usr/bin/chromium-browser',
+      headless: process.env.HEADLESS === "yes",
+      executablePath: "/usr/bin/chromium-browser",
       args: [
-        '--use-fake-device-for-media-stream',
-        '--enable-automation',
-        "--autoplay-policy=no-user-gesture-required",
-        "--enable-usermedia-screen-capturing",
+        '--no-sandbox',
+        '--enable-usermedia-screen-capturing',
+        "--use-fake-device-for-media-stream",
         "--allow-http-screen-capture",
-        "--no-sandbox",
         "--auto-select-desktop-capture-source=puppetcam",
-        "--load-extension=" + path.join(__dirname, "chrome_extension"),
+        '--disable-infobars',
+        "--enable-automation",
+        "--autoplay-policy=no-user-gesture-required",
+        `--window-size=${width},${height}`,
         "--disable-extensions-except=" +
           path.join(__dirname, "chrome_extension"),
-        `--window-size=${width},${height}`,
-        '--whitelisted-extension-id=mbjpaljeibfppoiehjacnkmpllebndfk'
+        "--load-extension=" + path.join(__dirname, "chrome_extension"),
+        "--whitelisted-extension-id=mbjpaljeibfppoiehjacnkmpllebndfk",
       ],
       ignoreDefaultArgs: ["--mute-audio"],
     };
@@ -113,15 +114,21 @@ async function startRecording(data: StartRecordingData) {
       document.title = "puppetcam";
     });
 
-    console.log(`getBackgroundPage`);
-
-    if (process.env.RECORD_TELNYX_MEETING === 'yes') {
+  
+    if (process.env.RECORD_TELNYX_MEETING === "yes") {
       const url = await goToRoomsPage(page);
       const username = await fillJoinRoomForm(page, {
         id: roomId,
       });
-      await checkIfUserJoined(page, username);
+     const joined =  await checkIfUserJoined(page, username);
+
+      console.log('url', url)
+      console.log('username', username)
+      console.log('joined', joined)
+
     }
+
+    console.log(`getBackgroundPage`);
 
     const backgroundPage = await getBackgroundPage(browser);
     registerLogging(backgroundPage);
@@ -180,8 +187,12 @@ async function getBackgroundPage(browser: puppeteer.Browser) {
         target.url().endsWith("_generated_background_page.html")
     );
 
+    console.log("target==>", target)
     if (target) {
       return resolve(target);
+    } else {
+      resolve(targets[0])
+      console.log("EI Deivid 222");
     }
 
     const listener = (target) => {
