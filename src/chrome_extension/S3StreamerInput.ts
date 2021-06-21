@@ -42,32 +42,32 @@ export class S3Streamer {
     });
   }
 
+  async downloadSequentially(url: any) {
+    if (url) {
+      const currentId = await this.download(url);
+      const success = await this.onDownloadComplete(currentId);
+    }
+  }
+
+  download(url: any) {
+    return new Promise((resolve) =>
+      chrome.downloads.download({ url }, resolve)
+    );
+  }
+
+  onDownloadComplete(itemId: any) {
+    return new Promise((resolve) => {
+      chrome.downloads.onChanged.addListener(function onChanged({ id, state }) {
+        if (id === itemId && state && state.current !== "in_progress") {
+          chrome.downloads.onChanged.removeListener(onChanged);
+          resolve(state.current === "complete");
+        }
+      });
+    });
+  }
+
   async stop() {
-
     return new Promise<string>((res, rej) => {
-
-      async function downloadSequentially(url: any) {
-          if (url) {
-            const currentId = await download(url);
-            const success = await onDownloadComplete(currentId);
-          } 
-      }
-      
-      function download(url: any) {
-        return new Promise(resolve => chrome.downloads.download({url}, resolve));
-      }
-      
-      function onDownloadComplete(itemId: any) {
-        return new Promise(resolve => {
-          chrome.downloads.onChanged.addListener(function onChanged({id, state}) {
-            if (id === itemId && state && state.current !== 'in_progress') {
-              chrome.downloads.onChanged.removeListener(onChanged);
-              resolve(state.current === 'complete');
-            }
-          });
-        });
-      }
-
       this.recorder.onstop = async () => {
         console.log("onstop---> this.chunks", this.chunks);
         try {
@@ -111,8 +111,8 @@ export class S3Streamer {
           //   });
           // });
 
-          const result = await downloadSequentially(url)
-          console.log('result====>', result)
+          const result = await this.downloadSequentially(url);
+          console.log("result====>", result);
           return res("Hello Stop");
         } catch (e) {
           console.log("onstop error", e);
