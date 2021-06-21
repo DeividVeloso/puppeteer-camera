@@ -1,44 +1,24 @@
-import { S3Streamer } from "./S3StreamerInput";
+import { Streamer } from "./StreamerInput";
 
 interface PuppetcamConfig {
   id: string;
+  roomId: string;
 }
 
 class Puppetcam {
-  private videoStreamer: S3Streamer;
+  private videoStreamer: Streamer;
 
   async setup(config: PuppetcamConfig) {
-    const { id } = config;
+    const { id, roomId } = config;
 
     console.log("running setup");
     await new Promise<void>((res, rej) => {
-      // chrome.tabCapture.capture(
-      //   {
-      //     audio: true,
-      //     video: true,
-      //   },
-      //   (stream) => {
-      //     if (!stream) return;
-      //     console.log(`Got handle for media stream`);
-
-      //     const videoRecorder = new MediaRecorder(stream, {
-      //       videoBitsPerSecond: 2500000,
-      //       ignoreMutedMedia: true,
-      //       mimeType: "video/webm;codecs=vp9",
-      //     } as MediaRecorderOptions);
-
-      //     this.videoStreamer = new S3Streamer({ recorder: videoRecorder, id });
-      //     res();
-      //     console.log(`Initialized video streamer`);
-      //   }
-      // );
-
       chrome.desktopCapture.chooseDesktopMedia(["tab", "audio"], (streamId) => {
+        console.log(`Got desktop streamId ${streamId}`);
         // Get the stream
         // @ts-ignore
         navigator.webkitGetUserMedia(
           {
-            // audio: false,
             audio: {
               mandatory: {
                 chromeMediaSource: "system",
@@ -66,19 +46,22 @@ class Puppetcam {
               mimeType: "video/webm;codecs=vp9",
             } as MediaRecorderOptions);
 
-            this.videoStreamer = new S3Streamer({
+            this.videoStreamer = new Streamer({
               recorder: videoRecorder,
               id,
+              roomId,
             });
-
-            res();
             console.log(`Initialized video streamer`);
+            res();
           },
-          (error:any) => console.log('Unable to get user media', error)
+          (error:any) => {
+            console.log('Unable to get user media', error)
+            rej(error.message)
+          }
         );
       });
     });
-    console.log(`Got desktop streamId`);
+  
   }
 
   async start() {
@@ -96,7 +79,6 @@ class Puppetcam {
     if (this.videoStreamer) {
       promises.push(this.videoStreamer.stop());
     }
-    console.log("stop===>", promises);
     return Promise.all(promises);
   }
 }

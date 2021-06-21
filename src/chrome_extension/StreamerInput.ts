@@ -1,17 +1,20 @@
-export interface S3StreamerInput {
+export interface StreamerInput {
   recorder: MediaRecorder;
   id: string;
+  roomId: string;
 }
 
-export class S3Streamer {
+export class Streamer {
   private recorder: MediaRecorder;
   private data: any;
   private chunks: Array<Blob>;
   private id: string;
+  private roomId: string;
 
-  constructor(input: S3StreamerInput) {
-    const { recorder, id } = input;
+  constructor(input: StreamerInput) {
+    const { recorder, id, roomId } = input;
     this.id = id;
+    this.roomId = roomId;
     this.chunks = [];
 
     this.recorder = recorder;
@@ -46,13 +49,25 @@ export class S3Streamer {
     if (url) {
       const currentId = await this.download(url);
       const success = await this.onDownloadComplete(currentId);
+      return success;
     }
   }
 
   download(url: any) {
-    return new Promise((resolve) =>
-      chrome.downloads.download({ url }, resolve)
-    );
+    return new Promise((resolve) => {
+      const filename =
+        `${new Date().toLocaleDateString()}-${new Date().toLocaleTimeString()}-video-meeting-${
+          this.id
+        }.webm`.replace(/[\/|:|\s]/gim, "-");
+
+      return chrome.downloads.download(
+        {
+          url,
+          filename,
+        },
+        resolve
+      );
+    });
   }
 
   onDownloadComplete(itemId: any) {
@@ -69,51 +84,15 @@ export class S3Streamer {
   async stop() {
     return new Promise<string>((res, rej) => {
       this.recorder.onstop = async () => {
-        console.log("onstop---> this.chunks", this.chunks);
         try {
           const blob = new Blob(this.chunks, {
             type: "video/webm",
           });
 
-          var a = document.createElement("a"),
-            url = URL.createObjectURL(blob);
-          a.href = url;
-          a.download = `${this.id}-enzo-records.webm`;
-          document.body.appendChild(a);
-          a.click();
-          setTimeout(function () {
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-          }, 0);
-
-          // const down = new Promise<number>((resolve, reject) => {
-          //   chrome.downloads.download(
-          //     {
-          //       url: url,
-          //       filename: `${this.id}-enzo2-records.webm`,
-          //     },
-          //     (download) => {
-          //       console.log("download", download);
-          //       resolve(download);
-          //     }
-          //   );
-          // });
-
-          // const id: number = await down;
-
-          // chrome.downloads.search({ id }, function (items) {
-          //   items.forEach(function (item) {
-          //     if (item.endTime) {
-          //       console.log('item====>', item)
-          //       console.log(new Date(item.endTime));
-          //       return res("Hello Stop");
-          //     }
-          //   });
-          // });
+          const url = URL.createObjectURL(blob);
 
           const result = await this.downloadSequentially(url);
-          console.log("result====>", result);
-          return res("Hello Stop");
+          return res(`Video saved on Downloads folder ${result}`);
         } catch (e) {
           console.log("onstop error", e);
           return rej(e);

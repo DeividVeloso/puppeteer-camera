@@ -4,7 +4,6 @@ import * as path from "path";
 import * as puppeteer from "puppeteer";
 require("dotenv").config();
 import {
-  goToRoomsPage,
   checkIfUserJoined,
   fillJoinRoomForm,
 } from "./utils/video";
@@ -120,7 +119,7 @@ async function startRecording(data: StartRecordingData) {
       document.title = "puppetcam";
     });
 
-    // if (process.env.RECORD_TELNYX_MEETING === "yes") {
+    if (process.env.RECORD_TELNYX_MEETING === "yes") {
       const username = await fillJoinRoomForm(page, {
         id: roomId,
       });
@@ -129,7 +128,7 @@ async function startRecording(data: StartRecordingData) {
       console.log("url", url);
       console.log("username", username);
       console.log("joined", joined);
-    // }
+    }
 
     console.log(`getBackgroundPage`);
 
@@ -159,7 +158,7 @@ async function startRecording(data: StartRecordingData) {
 
     currentRecordings.push({ id, roomId, page: backgroundPage, browser });
   } catch (error) {
-    console.log("OPEN PUPPETIR", error);
+    console.log("Error launching PUPPETCAM", error);
   }
 }
 
@@ -170,11 +169,9 @@ async function stopRecording(data: TelnyxRecording) {
   const location = await page.evaluate(async () => {
     return await (window as any).PUPPETCAM.stop();
   });
-  console.log("Ran stop() in background page");
+  console.log("Ran stop() in background page", location);
 
   // Wait for download of webm to complete
-  console.log(`Recording uploaded to S3 for Telnyx room: ${id}`);
-  console.log(`S3 download url: ${location}`);
   console.log(
     `Recording logs located at /root/Downloads/${id}.txt for Telnyx room: ${roomId}`
   );
@@ -191,7 +188,6 @@ async function getBackgroundPage(browser: puppeteer.Browser) {
         target.url().endsWith("_generated_background_page.html")
     );
 
-    console.log("target==>", target);
     if (target) {
       return resolve(target);
     } else {
@@ -206,8 +202,6 @@ async function getBackgroundPage(browser: puppeteer.Browser) {
         browser.removeListener("targetcreated", listener);
         browser.removeListener("targetchanged", listener);
         resolve(target);
-      } else {
-        console.log("EI Deivid");
       }
     };
 
