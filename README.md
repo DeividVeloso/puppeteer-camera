@@ -1,50 +1,55 @@
-# Puppeteer Camera
+## Pupeteer Cam
 
-### How it works
+## Set you env vars
 
-- Docker container starts an Express webserver
-- An HTTP `/start` request launches a headless Chromium browser with screen capture Chrome extension installed
-- The Chrome extension records the screen and audio output of any page
-- Data is streamed directly to S3 bucket in `.webm` format
+Create a `.env` file and fill with your configs
 
-### Run 
-
-Add .env
+```bash
+URL_PAGE=""
+ROOM_ID=""
+RECORD_TELNYX_MEETING="true"
+HEADLESS="false"
 
 ```
-AWS_REGION=us-west-2
-AWS_ACCESS_KEY_ID=XXX
-AWS_SECRET_ACCESS_KEY=XXX
-AWS_PUPPETCAM_BUCKET_NAME=bucket-name
+
+## To run on Docker
+
+First change the server.ts file line 49 from ` headless: false` to ` headless: true,`
+
+```bash
+ docker-compose up --build
 ```
 
-```sh
-docker-compose up --build
+## To run locally
+
+First change the `server.ts` file `line 49` from ` headless: true` to ` headless: false`
+
+```bash
+npm i 
+npm start
 ```
 
-### Start recording a url
-
-```sh
-curl -X POST -H "Content-Type: application/json" -d '{"id":"abc123","url":"https://www.animaker.com"}' localhost:3333/start
+## Start recording
+```bash
+curl --location --request POST 'http://localhost:3333/start' \
+--header 'Content-Type: application/json' \
+--header 'Cookie: ajs_anonymous_id=%22DEV-37dc8cec-0191-4afc-9958-dcc71fa5f764%22' \
+--data-raw '{
+    "id": "1",
+    "roomId": "208b22c8-640e-4473-9cbc-7dc2f1a799cb"
+}'
 ```
 
-**Note:** Reusing id will overwrite previous file
+## Stop recording
 
-### Stop recording a url
-
-```sh
-curl -X POST -H "Content-Type: application/json" -d '{"id":"abc123"}' localhost:3333/stop
+```bash
+curl --location --request POST 'http://localhost:3333/stop' \
+--header 'Content-Type: application/json' \
+--header 'Cookie: ajs_anonymous_id=%22DEV-37dc8cec-0191-4afc-9958-dcc71fa5f764%22' \
+--data-raw '{
+    "id": "1"
+}'
 ```
 
-### Record Twilio Video
 
-```sh
-curl -X POST -H "Content-Type: application/json" -d '{"id":"abc123","url":"http://localhost:3333/?roomName=XXX&twilioToken=XXX"}' localhost:3333/start
-```
-
-See: [index.tsx](https://github.com/ted-piotrowski/puppeteer-camera/blob/main/src/public/index.tsx)
-
-### Inspiration
-
-See: [https://github.com/muralikg/puppetcam](https://github.com/muralikg/puppetcam)
 
