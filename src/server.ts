@@ -11,7 +11,7 @@ import {
 
 // Set up virtual frame buffer, aka render screen pixels to memory instead of an actual display
 // Pixel rendering will be saved from memory to webm video recording
-// import * as Xvfb from 'xvfb';
+import * as Xvfb from 'xvfb';
 
 interface StartRecordingData {
   id: string;
@@ -29,10 +29,10 @@ interface TelnyxRecording {
 
 let currentRecordings: TelnyxRecording[] = [];
 
-// const xvfb = new (Xvfb as any)({ silent: true });
-// xvfb.startSync()
+const xvfb = new (Xvfb as any)({ silent: true });
+xvfb.startSync()
 
-// process.on('exit', xvfb.stopSync);
+process.on('exit', xvfb.stopSync);
 const app = express();
 const port = 3333;
 app.use(bodyParser.json());
@@ -46,7 +46,7 @@ app.post("/start", async (req, res) => {
     const height = req.body.height || 1080;
 
     const options = {
-      headless: process.env.HEADLESS === "yes",
+      headless: true,
       executablePath: "/usr/bin/chromium-browser",
       args: [
         "--no-sandbox",

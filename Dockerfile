@@ -23,15 +23,17 @@ ADD config/xvfb-chrome /usr/bin/xvfb-chrome
 RUN ln -s /usr/bin/xvfb-chrome /usr/bin/chrome-browser
 RUN ln -s /usr/bin/xvfb-chromium /usr/bin/chromium-browser
 
-COPY package.json /usr/src/app
+COPY . /usr/src/app
 
 COPY yarn.lock /usr/src/app
-
-COPY .env /usr/src/app
 
 RUN yarn install
 
 RUN rm -rf ~/.cache
+
+ENV NODE_ENV=production
+ENV PORT=3333
+EXPOSE 3333
 
 CMD yarn start
 
