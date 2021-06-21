@@ -43,7 +43,31 @@ export class S3Streamer {
   }
 
   async stop() {
+
     return new Promise<string>((res, rej) => {
+
+      async function downloadSequentially(url: any) {
+          if (url) {
+            const currentId = await download(url);
+            const success = await onDownloadComplete(currentId);
+          } 
+      }
+      
+      function download(url: any) {
+        return new Promise(resolve => chrome.downloads.download({url}, resolve));
+      }
+      
+      function onDownloadComplete(itemId: any) {
+        return new Promise(resolve => {
+          chrome.downloads.onChanged.addListener(function onChanged({id, state}) {
+            if (id === itemId && state && state.current !== 'in_progress') {
+              chrome.downloads.onChanged.removeListener(onChanged);
+              resolve(state.current === 'complete');
+            }
+          });
+        });
+      }
+
       this.recorder.onstop = async () => {
         console.log("onstop---> this.chunks", this.chunks);
         try {
@@ -62,6 +86,33 @@ export class S3Streamer {
             window.URL.revokeObjectURL(url);
           }, 0);
 
+          // const down = new Promise<number>((resolve, reject) => {
+          //   chrome.downloads.download(
+          //     {
+          //       url: url,
+          //       filename: `${this.id}-enzo2-records.webm`,
+          //     },
+          //     (download) => {
+          //       console.log("download", download);
+          //       resolve(download);
+          //     }
+          //   );
+          // });
+
+          // const id: number = await down;
+
+          // chrome.downloads.search({ id }, function (items) {
+          //   items.forEach(function (item) {
+          //     if (item.endTime) {
+          //       console.log('item====>', item)
+          //       console.log(new Date(item.endTime));
+          //       return res("Hello Stop");
+          //     }
+          //   });
+          // });
+
+          const result = await downloadSequentially(url)
+          console.log('result====>', result)
           return res("Hello Stop");
         } catch (e) {
           console.log("onstop error", e);
