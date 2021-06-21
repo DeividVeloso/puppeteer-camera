@@ -46,9 +46,11 @@ app.post("/start", async (req, res) => {
     const height = req.body.height || 1080;
 
     const options = {
-      headless: true,
-      executablePath: "/usr/bin/chromium-browser",
+      headless: false,
+     // executablePath: "/usr/bin/chromium-browser",
       args: [
+        '--enable-usermedia-screen-capturing',
+        '--allow-http-screen-capture',
         "--no-sandbox",
         "--enable-usermedia-screen-capturing",
         "--use-fake-device-for-media-stream",
@@ -66,6 +68,7 @@ app.post("/start", async (req, res) => {
       ignoreDefaultArgs: ["--mute-audio"],
     };
 
+    console.log('startRecording')
     await startRecording({ url: process.env.URL_PAGE, id, roomId, options });
     res.json({ message: "OK" });
   } else {
@@ -100,21 +103,24 @@ async function startRecording(data: StartRecordingData) {
   try {
     const { id, url, roomId, options } = data;
     const browser = await puppeteer.launch(options);
+    console.log('browser')
     const pages = await browser.pages();
+    console.log('pages')
+
     const page = pages[0];
     console.log(`Browser spawned and navigating to recording url`);
     await (page as any)._client.send("Emulation.clearDeviceMetricsOverride");
     console.log(`Emulation.clearDeviceMetricsOverride`);
 
-    await page.goto(url, { waitUntil: "networkidle2" });
+    await page.goto('https://video-meet-dev.vercel.app/rooms', { waitUntil: "networkidle2" });
     console.log(`networkidle2`);
+    await page.setBypassCSP(true)
 
     await page.evaluate(() => {
       document.title = "puppetcam";
     });
 
-    if (process.env.RECORD_TELNYX_MEETING === "yes") {
-      const url = await goToRoomsPage(page);
+    // if (process.env.RECORD_TELNYX_MEETING === "yes") {
       const username = await fillJoinRoomForm(page, {
         id: roomId,
       });
@@ -123,7 +129,7 @@ async function startRecording(data: StartRecordingData) {
       console.log("url", url);
       console.log("username", username);
       console.log("joined", joined);
-    }
+    // }
 
     console.log(`getBackgroundPage`);
 

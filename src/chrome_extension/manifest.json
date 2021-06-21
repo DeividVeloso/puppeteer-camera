@@ -7,9 +7,8 @@
     "scripts": ["background.js"]
   },
   "permissions": [
-    "tabs",
-    "tabCapture",
-    "<all_urls>",
-    "https://video-meet-dev.vercel.app"
+    "desktopCapture",
+    "downloads"
   ]
 }
+

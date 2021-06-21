@@ -12,26 +12,71 @@ class Puppetcam {
 
     console.log("running setup");
     await new Promise<void>((res, rej) => {
-      chrome.tabCapture.capture(
-        {
-          audio: true,
-          video: true,
-        },
-        (stream) => {
-          if (!stream) return;
-          console.log(`Got handle for media stream`);
+      // chrome.tabCapture.capture(
+      //   {
+      //     audio: true,
+      //     video: true,
+      //   },
+      //   (stream) => {
+      //     if (!stream) return;
+      //     console.log(`Got handle for media stream`);
 
-          const videoRecorder = new MediaRecorder(stream, {
-            videoBitsPerSecond: 2500000,
-            ignoreMutedMedia: true,
-            mimeType: "video/webm;codecs=vp9",
-          } as MediaRecorderOptions);
-          
-          this.videoStreamer = new S3Streamer({ recorder: videoRecorder, id });
-          res();
-          console.log(`Initialized video streamer`);
-        }
-      );
+      //     const videoRecorder = new MediaRecorder(stream, {
+      //       videoBitsPerSecond: 2500000,
+      //       ignoreMutedMedia: true,
+      //       mimeType: "video/webm;codecs=vp9",
+      //     } as MediaRecorderOptions);
+
+      //     this.videoStreamer = new S3Streamer({ recorder: videoRecorder, id });
+      //     res();
+      //     console.log(`Initialized video streamer`);
+      //   }
+      // );
+
+      chrome.desktopCapture.chooseDesktopMedia(["tab", "audio"], (streamId) => {
+        // Get the stream
+        // @ts-ignore
+        navigator.webkitGetUserMedia(
+          {
+            // audio: false,
+            audio: {
+              mandatory: {
+                chromeMediaSource: "system",
+              },
+            },
+            video: {
+              mandatory: {
+                chromeMediaSource: "desktop",
+                chromeMediaSourceId: streamId,
+                minWidth: 1280,
+                maxWidth: 1280,
+                minHeight: 720,
+                maxHeight: 720,
+                minFrameRate: 60,
+              },
+            },
+          },
+          (stream: any) => {
+            if (!stream) return;
+            console.log(`Got handle for media stream`);
+
+            const videoRecorder = new MediaRecorder(stream, {
+              videoBitsPerSecond: 2500000,
+              ignoreMutedMedia: true,
+              mimeType: "video/webm;codecs=vp9",
+            } as MediaRecorderOptions);
+
+            this.videoStreamer = new S3Streamer({
+              recorder: videoRecorder,
+              id,
+            });
+
+            res();
+            console.log(`Initialized video streamer`);
+          },
+          (error:any) => console.log('Unable to get user media', error)
+        );
+      });
     });
     console.log(`Got desktop streamId`);
   }

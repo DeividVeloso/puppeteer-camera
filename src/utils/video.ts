@@ -1,4 +1,4 @@
-import { Page } from 'puppeteer';
+// import { Page } from 'puppeteer';
 
 const DEPLAY_CLICK_MILLISECOND = 2000;
 
@@ -6,7 +6,7 @@ const options = {
   timeout: 30000,
 };
 
-export const goToRoomsPage = async (page: Page): Promise<string> => {
+export const goToRoomsPage = async (page: any): Promise<string> => {
   await page.click('[data-testid="btn-select-room"]', {
     delay: DEPLAY_CLICK_MILLISECOND,
   });
@@ -15,7 +15,7 @@ export const goToRoomsPage = async (page: Page): Promise<string> => {
 };
 
 export const fillJoinRoomForm = async (
-  page: Page,
+  page: any,
   roomInfo: any
 ): Promise<string> => {
   await page.waitForSelector('[data-testid="input-room-uuid"]')
@@ -41,7 +41,7 @@ export const fillJoinRoomForm = async (
 };
 
 export const checkIfUserJoined = async (
-  page: Page,
+  page: any,
   userName: string
 ): Promise<boolean> => {
   const videoFeed = await page
