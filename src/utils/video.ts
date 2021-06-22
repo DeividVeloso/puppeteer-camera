@@ -18,25 +18,35 @@ export const fillJoinRoomForm = async (
   page: Page,
   roomInfo: any
 ): Promise<string> => {
-  await page.waitForSelector('[data-testid="input-room-uuid"]')
-  await page.waitForSelector('[data-testid="input-username"]')
+
+await page
+  .waitForSelector('[data-testid="input-room-uuid"]', options)
 
   await page.type('[data-testid="input-room-uuid"]', roomInfo.id);
-  await page.type('[data-testid="input-username"]', 'Recording user');
+  await page.evaluate(() => {
+    const example = document.querySelector('[data-testid="input-username"]');
+    // @ts-ignore
+    example.value = "";
+  });
 
+  await page.type('[data-testid="input-username"]', 'Recording...');
  
   const userName = await page.evaluate(() =>
    // @ts-ignore
     document
       .querySelector("[data-testid='input-username']")
-      .getAttribute('placeholder')
+      .getAttribute('value')
   );
+
+
   if (!userName) {
     return '';
   }
+
   await page.click('[data-testid="btn-join-room"]', {
     delay: DEPLAY_CLICK_MILLISECOND,
   });
+
   return userName;
 };
 
@@ -54,4 +64,3 @@ export const checkIfUserJoined = async (
   }
  return false
 };
-

@@ -1,4 +1,4 @@
 node_modules/
 dist/
-Downloads/
+Downloads/*
 .env

@@ -14,7 +14,7 @@ HEADLESS="false"
 
 ## To run on Docker
 
-First change the server.ts file line 49 from ` headless: false`
+First change the `server.ts` file line 49 to ` headless: false`
 
 ```bash
  docker-compose up --build
@@ -22,7 +22,7 @@ First change the server.ts file line 49 from ` headless: false`
 
 ## To run locally
 
-First change the `server.ts` file `line 49` from ` headless: false`
+First change the `server.ts` file `line 49` to ` headless: false`
 
 ```bash
 npm i 

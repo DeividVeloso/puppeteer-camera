@@ -46,9 +46,7 @@ app.post("/start", async (req, res) => {
 
     const options = {
       headless: false,
-     // executablePath: "/usr/bin/chromium-browser",
       args: [
-        '--enable-usermedia-screen-capturing',
         '--allow-http-screen-capture',
         "--no-sandbox",
         "--enable-usermedia-screen-capturing",
@@ -62,10 +60,12 @@ app.post("/start", async (req, res) => {
         "--disable-extensions-except=" +
           path.join(__dirname, "chrome_extension"),
         "--load-extension=" + path.join(__dirname, "chrome_extension"),
-        "--whitelisted-extension-id=mbjpaljeibfppoiehjacnkmpllebndfk",
+        '--disable-extensions-file-access-check',
       ],
       ignoreDefaultArgs: ["--mute-audio"],
     };
+
+    // "--whitelisted-extension-id=mbjpaljeibfppoiehjacnkmpllebndfk",
 
     console.log('startRecording')
     await startRecording({ url: process.env.URL_PAGE, id, roomId, options });
@@ -107,11 +107,11 @@ async function startRecording(data: StartRecordingData) {
     console.log('pages')
 
     const page = pages[0];
-    console.log(`Browser spawned and navigating to recording url`);
+    console.log(`Browser spawned and navigating to recording url ${url}`);
     await (page as any)._client.send("Emulation.clearDeviceMetricsOverride");
     console.log(`Emulation.clearDeviceMetricsOverride`);
 
-    await page.goto('https://video-meet-dev.vercel.app/rooms', { waitUntil: "networkidle2" });
+    await page.goto(url, { waitUntil: "networkidle2" });
     console.log(`networkidle2`);
     await page.setBypassCSP(true)
 
