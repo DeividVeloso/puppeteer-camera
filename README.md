@@ -1,5 +1,7 @@
 ## Pupeteer Cam
 
+It is only working using this video-meet commit version `3d5fd8c` and using the `@telnyx/video: 0.1.0-alpha.4` 
+
 ## Set you env vars
 
 Create a `.env` file and fill with your configs
