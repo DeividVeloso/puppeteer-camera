@@ -2,3 +2,4 @@ node_modules/
 dist/
 Downloads/*
 .env
+.DS_Store
